@@ -422,6 +422,22 @@ class ProtocolTest(test_base.TargetPython3BasicTest):
     self.assertErrorRegexes(errors, {
         "e1": r"Appendable.*int.*append",
         "e2": r"Appendable.*NotAppendable.*append"})
+    
+  def test_generic_custom_protocol(self):
+    self.Check("""
+      from typing import AnyStr, TypeVar
+      from typing_extensions import Protocol
+      _T = TypeVar("_T", contravariant=True)
+      class Appendable(Protocol[_T]):
+        def append(self, val: _T):
+          pass
+      class MyAppendable(object):
+        def append(self, val: AnyStr):
+          pass
+      def f(x: Appendable[AnyStr]):
+        pass
+      f(MyAppendable())
+    """)
 
   def test_reingest_custom_protocol(self):
     ty = self.Infer("""
